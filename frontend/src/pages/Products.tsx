@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Product } from '../types';
 import { productsApi } from '../api/products';
 import { categoriesApi } from '../api/categories';
@@ -278,8 +279,12 @@ export function Products() {
           </thead>
           <tbody>
             {products.map((p) => (
-              <tr key={p.id} className="border-t">
-                <td className="px-6 py-4">{p.name}</td>
+              <tr key={p.id} className="border-t hover:bg-gray-50">
+                <td className="px-6 py-4">
+                  <Link to={`/products/${p.id}`} className="text-blue-600 hover:text-blue-800 font-medium">
+                    {p.name}
+                  </Link>
+                </td>
                 <td className="px-6 py-4">{p.sku || '-'}</td>
                 <td className="px-6 py-4">${p.price.toFixed(2)}</td>
                 <td className="px-6 py-4">

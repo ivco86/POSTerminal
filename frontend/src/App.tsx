@@ -6,6 +6,7 @@ import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
 import { POS } from './pages/POS';
 import { Products } from './pages/Products';
+import { ProductDetails } from './pages/ProductDetails';
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuthStore();
@@ -29,6 +30,7 @@ export default function App() {
           <Route path="pos" element={<POS />} />
           <Route path="products" element={<Products />} />
         </Route>
+        <Route path="/products/:id" element={<PrivateRoute><ProductDetails /></PrivateRoute>} />
       </Routes>
     </BrowserRouter>
   );
