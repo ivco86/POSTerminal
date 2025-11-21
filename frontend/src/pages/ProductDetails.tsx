@@ -1,6 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { productsApi } from '../api/products';
+import { categoriesApi } from '../api/categories';
+import { ImageUpload } from '../components/common/ImageUpload';
+import { CategoryTreeSelect } from '../components/common/CategoryTreeSelect';
+import { BatchTable } from '../components/common/BatchTable';
+import { StockChart } from '../components/common/StockChart';
+import { AuditTimeline } from '../components/common/AuditTimeline';
 
 interface ProductDetail {
   id: number;
@@ -24,6 +30,7 @@ export function ProductDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [product, setProduct] = useState<ProductDetail | null>(null);
+  const [categories, setCategories] = useState<any[]>([]);
   const [activeSection, setActiveSection] = useState<Section>('general');
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<Partial<ProductDetail>>({});
@@ -32,7 +39,13 @@ export function ProductDetails() {
     if (id) {
       loadProduct(parseInt(id));
     }
+    loadCategories();
   }, [id]);
+
+  const loadCategories = async () => {
+    const { data } = await categoriesApi.list();
+    setCategories(data);
+  };
 
   const loadProduct = async (productId: number) => {
     const { data } = await productsApi.get(productId);
@@ -207,6 +220,16 @@ export function ProductDetails() {
           {/* Секция 1: General Info */}
           <section id="general" className="bg-white rounded-lg shadow p-6">
             <h2 className="text-xl font-bold mb-4">📦 General Information</h2>
+
+            {/* Image Upload */}
+            <div className="mb-6">
+              <ImageUpload
+                currentImage={formData.image_url}
+                onImageChange={(url) => setFormData({ ...formData, image_url: url })}
+                disabled={!isEditing}
+              />
+            </div>
+
             <div className="grid grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Product Name</label>
@@ -244,6 +267,14 @@ export function ProductDetails() {
                     </button>
                   )}
                 </div>
+              </div>
+              <div>
+                <CategoryTreeSelect
+                  categories={categories}
+                  selectedId={formData.category_id}
+                  onSelect={(id) => setFormData({ ...formData, category_id: id })}
+                  disabled={!isEditing}
+                />
               </div>
               <div className="col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
@@ -338,6 +369,20 @@ export function ProductDetails() {
                 <p className="text-red-700 font-medium">⚠️ Low stock alert! Current stock is at or below minimum level.</p>
               </div>
             )}
+
+            {/* Batch Management */}
+            <div className="mt-6">
+              <h3 className="text-lg font-semibold mb-4">Batch Management</h3>
+              <BatchTable
+                batches={[
+                  // Mock data - replace with API call
+                  { id: 1, delivery_date: '2024-01-15', expiry_date: '2024-12-31', quantity: 50, location: 'Main Store' },
+                  { id: 2, delivery_date: '2024-02-01', expiry_date: '2024-03-15', quantity: 30, location: 'Warehouse' },
+                ]}
+                onMarkDefective={(id) => console.log('Mark defective:', id)}
+                onMove={(id) => console.log('Move batch:', id)}
+              />
+            </div>
           </section>
 
           {/* Секция 4: Supply Chain */}
@@ -354,8 +399,55 @@ export function ProductDetails() {
           {/* Секция 5: Analytics */}
           <section id="analytics" className="bg-white rounded-lg shadow p-6">
             <h2 className="text-xl font-bold mb-4">📈 Analytics & History</h2>
-            <div className="text-center py-8 text-gray-500">
-              <p>Analytics data will be displayed here</p>
+
+            {/* Stock Chart */}
+            <div className="mb-8">
+              <StockChart
+                data={[
+                  // Mock data - replace with API call
+                  { date: '2024-01-01', stock: 100 },
+                  { date: '2024-01-05', stock: 120 },
+                  { date: '2024-01-10', stock: 90 },
+                  { date: '2024-01-15', stock: 150 },
+                  { date: '2024-01-20', stock: 110 },
+                  { date: '2024-01-25', stock: 95 },
+                  { date: '2024-01-30', stock: 130 },
+                ]}
+              />
+            </div>
+
+            {/* Audit Log */}
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Edit History</h3>
+              <AuditTimeline
+                entries={[
+                  // Mock data - replace with API call
+                  {
+                    id: 1,
+                    user: 'John Smith',
+                    action: 'updated product',
+                    field: 'price',
+                    old_value: '4.59',
+                    new_value: '4.99',
+                    timestamp: '2024-01-15T14:30:00Z'
+                  },
+                  {
+                    id: 2,
+                    user: 'Eva Johnson',
+                    action: 'added stock',
+                    field: 'stock_quantity',
+                    old_value: '50',
+                    new_value: '100',
+                    timestamp: '2024-01-10T09:15:00Z'
+                  },
+                  {
+                    id: 3,
+                    user: 'Admin',
+                    action: 'created product',
+                    timestamp: '2024-01-01T10:00:00Z'
+                  },
+                ]}
+              />
             </div>
           </section>
         </main>
